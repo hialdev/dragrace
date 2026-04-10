@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #b80014;
+  --color-primary-container: #e21b23;
+  --color-surface: #f9f9fb;
+  --color-on-surface: #1a1c1d;
+  --color-on-surface-variant: #5d3f3c;
+  --color-surface-container: #edeef0;
+  --color-surface-container-low: #f3f3f5;
+  --color-secondary: #5d5f5f;
+  --color-tertiary: #595a5e;
+  
+  --font-headline: "Space Grotesk", sans-serif;
+  --font-body: "Manrope", sans-serif;
+  
+  --radius-default: 1rem;
+  --radius-lg: 2rem;
+  --radius-xl: 3rem;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+:root {
+  --background: #f9f9fb;
+  --foreground: #1a1c1d;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Utilities from Stitch */
+.checkered-divider {
+  background-image: 
+    linear-gradient(45deg, #1a1c1d 25%, transparent 25%), 
+    linear-gradient(-45deg, #1a1c1d 25%, transparent 25%), 
+    linear-gradient(45deg, transparent 75%, #1a1c1d 75%), 
+    linear-gradient(-45deg, transparent 75%, #1a1c1d 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  height: 20px;
+  width: 100%;
+  opacity: 0.05;
+}
+
+.text-shadow-subtle {
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.tonal-shift-bottom {
+  box-shadow: 0 10px 30px -10px rgba(26, 28, 29, 0.05);
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f9f9fb; }
+::-webkit-scrollbar-thumb { background: #edeef0; border-radius: 10px; }
