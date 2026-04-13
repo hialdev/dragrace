@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
         port: '8090',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'mimin.dragrace.mbw211ci.or.id',
+      },
     ],
   },
 };
