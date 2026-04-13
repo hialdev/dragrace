@@ -27,10 +27,27 @@ export const registerSchema = z
 
 export type RegisterForm = z.infer<typeof registerSchema>;
 
-// ── Login ─────────────────────────────────────────────
+// ── Login (Password mode) ─────────────────────────────
 export const loginSchema = z.object({
   email: z.string().email("Format email tidak valid"),
   password: z.string().min(1, "Password wajib diisi"),
 });
 
 export type LoginForm = z.infer<typeof loginSchema>;
+
+// ── OTP Login — Step 1: Email ─────────────────────────
+export const otpEmailSchema = z.object({
+  email: z.string().email("Format email tidak valid"),
+});
+
+export type OtpEmailForm = z.infer<typeof otpEmailSchema>;
+
+// ── OTP Login — Step 2: Code ──────────────────────────
+export const otpCodeSchema = z.object({
+  otp: z
+    .string()
+    .length(6, "Kode OTP harus 6 digit")
+    .regex(/^\d{6}$/, "Kode OTP hanya angka"),
+});
+
+export type OtpCodeForm = z.infer<typeof otpCodeSchema>;
