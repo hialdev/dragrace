@@ -53,6 +53,10 @@ func main() {
 			return e.Next()
 		})
 
+		// Auth helper routes (public)
+		authGroup := se.Router.Group("/api/auth")
+		authGroup.POST("/check-email", routes.CheckEmailExists(app))
+
 		// Payment routes
 		paymentGroup := se.Router.Group("/api/payment")
 		paymentGroup.POST("/create-link", routes.CreatePaymentLink(app))
