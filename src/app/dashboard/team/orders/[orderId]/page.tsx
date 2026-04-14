@@ -126,7 +126,7 @@ export default function OrderDetailPage() {
       {/* Pit Details */}
       <div className="bg-white/5 border border-white/8 rounded-2xl p-6 mb-4">
         <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4">Info Pit</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <InfoRow label="Nama Pit" value={pit?.name} />
           <InfoRow label="Kategori" value={pit?.expand?.race_category?.name ?? pit?.race_category} />
           <InfoRow label="Harga" value={order.bill_price > 0 ? formatCurrency(order.bill_price) : "Gratis"} />
@@ -138,7 +138,7 @@ export default function OrderDetailPage() {
       {(order.payment_link_url || order.proof_payment) && (
         <div className="bg-white/5 border border-white/8 rounded-2xl p-6 mb-4">
           <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4">Info Pembayaran</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {order.payment_ref && <InfoRow label="Ref. Flip" value={order.payment_ref} />}
             {order.payment_expired_at && (
               <InfoRow label="Berlaku Hingga"

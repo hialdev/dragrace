@@ -4,6 +4,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { useTeamStore } from "@/store/teamStore";
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import { getAdminList, getFileUrl } from "@/lib/api/content-admin";
 
 const navItems = [
   { href: "/dashboard/team", label: "Dashboard", icon: "home", exact: true },
@@ -18,6 +21,27 @@ export default function TeamTopNav() {
   const { user, logout } = useAuthStore();
   const { teamName } = useTeamStore();
 
+  const [siteName, setSiteName] = useState("STAR DRAG RACE");
+  const [siteLogoUrl, setSiteLogoUrl] = useState("");
+
+  useEffect(() => {
+    const fetchSiteSettings = async () => {
+      try {
+        const records = await getAdminList("single_content", { filter: 'key="site_name" || key="site_logo"' });
+        // @ts-ignore
+        const nameRecord = records.find((r) => r.key === "site_name");
+        // @ts-ignore
+        const logoRecord = records.find((r) => r.key === "site_logo");
+
+        if (nameRecord?.content) setSiteName(nameRecord.content);
+        if (logoRecord?.image) setSiteLogoUrl(getFileUrl(logoRecord, logoRecord.image));
+      } catch (error) {
+        console.error("Failed to load site settings", error);
+      }
+    };
+    fetchSiteSettings();
+  }, []);
+
   const handleLogout = async () => {
     await logout();
     router.push("/login");
@@ -29,14 +53,20 @@ export default function TeamTopNav() {
         <div className="flex items-center gap-6 h-16">
           {/* Brand */}
           <Link href="/dashboard/team" className="flex items-center gap-2.5 flex-shrink-0">
-            <div className="w-7 h-7 bg-[#b80014] rounded-sm flex items-center justify-center">
-              <span className="text-white font-bold text-xs">DR</span>
-            </div>
-            <div className="hidden sm:block">
-              <p className="text-white font-headline font-semibold text-sm leading-tight">
-                STAR DRAG RACE
+            {siteLogoUrl ? (
+              <div className="relative w-8 h-8 flex-shrink-0">
+                <Image src={siteLogoUrl} alt="Logo" fill className="object-contain" />
+              </div>
+            ) : (
+              <div className="w-7 h-7 bg-[#b80014] rounded-sm flex items-center justify-center">
+                <span className="text-white font-bold text-xs flex-shrink-0">DR</span>
+              </div>
+            )}
+            <div className="hidden sm:block overflow-hidden">
+              <p className="text-white font-headline font-semibold text-sm leading-tight truncate max-w-[150px]" title={siteName}>
+                {siteName}
               </p>
-              <p className="text-white/30 text-[9px] uppercase tracking-wider -mt-0.5">
+              <p className="text-white/30 text-[9px] uppercase tracking-wider -mt-0.5 truncate max-w-[150px]">
                 {teamName ?? "Team Portal"}
               </p>
             </div>

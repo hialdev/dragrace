@@ -60,7 +60,7 @@ export default function RaceManagerOverview() {
         <StatCard label="Data Terkunci" value={lockedOrders.length} icon="lock" color="text-blue-400" href="/dashboard/race-manager/participants" />
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Pending change requests */}
         <div className="bg-white/5 border border-white/8 rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">

@@ -167,7 +167,7 @@ export default function TeamDashboardPage() {
         <h2 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-4">
           Info Manager
         </h2>
-        <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           {[
             ["Nama Manager", team?.manager_name],
             ["No. HP Manager", team?.manager_phone],

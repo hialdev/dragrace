@@ -171,7 +171,7 @@ function TeamProfileForm() {
         {/* Section: Data Tim */}
         <div className="bg-white/5 border border-white/8 rounded-2xl p-6 space-y-4">
           <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wider">Data Tim</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="col-span-2">
               <FormField label="Nama Tim *" id="name" error={errors.name?.message}>
                 <input
@@ -232,7 +232,7 @@ function TeamProfileForm() {
           <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wider">
             Data Manager Tim
           </h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField label="Nama Manager *" id="manager_name" error={errors.manager_name?.message}>
               <input
                 id="manager_name"
