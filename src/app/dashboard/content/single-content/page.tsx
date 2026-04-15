@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { getAdminList, updateAdminRecord, getFileUrl } from "@/lib/api/content-admin";
-import RichTextEditor from "@/components/content/RichTextEditor";
 import Image from "next/image";
 
 interface SingleContent {
@@ -170,10 +169,11 @@ export default function SingleContentPage() {
                     </div>
                   ) : (
                     <div className="w-full">
-                      <RichTextEditor
+                      <textarea
                         value={editData.content}
-                        onChange={(val) => setEditData({ ...editData, content: val })}
-                        minHeight="150px"
+                        onChange={(e) => setEditData({ ...editData, content: e.target.value })}
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white outline-none focus:border-[#b80014]/70 focus:ring-1 focus:ring-[#b80014]/50 transition-all font-sans min-h-[150px] resize-y"
+                        placeholder="Masukkan konten teks di sini..."
                       />
                     </div>
                   )

@@ -35,7 +35,7 @@ import {
   TimelineEvent 
 } from "@/lib/types/content";
 
-function CtaButton() {
+function CtaButton({ guestLabel }: { guestLabel?: string }) {
   const { isAuthenticated } = useAuthStore();
   const [ready, setReady] = useState(false);
 
@@ -48,7 +48,7 @@ function CtaButton() {
   }
 
   const href = isAuthenticated ? "/dashboard/team/orders" : "/register";
-  const label = isAuthenticated ? "Daftar Pit" : "Register / Apply / Reserve";
+  const label = isAuthenticated ? "Daftar Pit" : (guestLabel || "Register / Apply / Reserve");
 
   return (
     <Link
@@ -147,7 +147,11 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar logo={data.content.site_logo} siteName={data.content.site_name} />
+      <Navbar 
+        logo={data.content.site_logo} 
+        siteName={data.content.site_name} 
+        registerText={data.content.register_btn_text} 
+      />
       <main className="flex-grow">
         <div id="about">
           <Hero content={data.content} />
@@ -160,7 +164,7 @@ export default function Home() {
         <div id="prize">
           <Prizes classes={data.classes} prizes={data.prizes} content={data.content} />
         </div>
-        <Registration steps={data.steps} ctaButton={<CtaButton />} content={data.content} />
+        <Registration steps={data.steps} ctaButton={<CtaButton guestLabel={data.content.register_btn_text} />} content={data.content} />
         <div className="checkered-divider" />
         <div id="star-guest">
           <GuestStars guests={data.guests} content={data.content} />

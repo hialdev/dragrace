@@ -6,7 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
 
-export const Navbar = ({ logo, siteName }: { logo?: string; siteName?: string }) => {
+export const Navbar = ({ logo, siteName, registerText }: { logo?: string; siteName?: string; registerText?: string }) => {
   const { isAuthenticated } = useAuthStore();
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [isReady, setIsReady] = React.useState(false);
@@ -86,7 +86,7 @@ export const Navbar = ({ logo, siteName }: { logo?: string; siteName?: string })
                      whileTap={{ scale: 0.95 }}
                      className="w-full h-full"
                   >
-                     {isAuthenticated ? "My Orders" : "Reserve Entry"}
+                     {isAuthenticated ? "My Orders" : (registerText || "Reserve Entry")}
                   </motion.div>
                </Link>
             )}

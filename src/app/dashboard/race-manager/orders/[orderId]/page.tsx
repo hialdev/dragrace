@@ -89,15 +89,8 @@ export default function RMOrderDetailPage() {
     finally { setActing(false); }
   };
 
-  const handleExport = async () => {
-    try {
-      const teamId = order?.expand?.team?.id || order?.expand?.user?.id;
-      const blob = await downloadTeamExport(teamId, "excel");
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = `peserta-${order.code}.xlsx`;
-      a.click(); URL.revokeObjectURL(url);
-    } catch { alert("Export gagal."); }
+  const handleExport = () => {
+    window.print();
   };
 
   if (loading || !order) {
@@ -116,7 +109,7 @@ export default function RMOrderDetailPage() {
 
   return (
     <div className="p-8 max-w-4xl mx-auto pb-24">
-      <div className="flex items-center gap-4 mb-8">
+      <div className="flex items-center gap-4 mb-8 print:hidden">
         <Link href="/dashboard/race-manager/orders"
           className="p-3 text-white/40 hover:text-white hover:bg-white/5 rounded-2xl transition-all border border-white/5">
           <span className="material-symbols-outlined text-[24px]">arrow_back</span>
@@ -228,9 +221,9 @@ export default function RMOrderDetailPage() {
                   <div className="mt-4 pt-4 border-t border-white/5">
                     <p className="text-white/30 text-[10px] uppercase font-bold mb-3">Bukti Pembayaran</p>
                     <a href={proofUrl} target="_blank" rel="noopener noreferrer"
-                      className="group block w-full aspect-[3/4] rounded-xl bg-black/40 overflow-hidden relative border border-white/5">
-                      <img src={proofUrl} className="w-full h-full object-cover opacity-50 group-hover:opacity-80 transition-all" />
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      className="group block w-full aspect-[3/4] rounded-xl bg-black/40 overflow-hidden relative border border-white/5 print:aspect-auto print:h-auto">
+                      <img src={proofUrl} className="w-full h-full object-cover opacity-50 group-hover:opacity-80 transition-all print:opacity-100 print:relative" />
+                      <div className="absolute inset-0 flex flex-col items-center justify-center print:hidden">
                         <span className="material-symbols-outlined text-white text-[32px] mb-1">zoom_in</span>
                         <span className="text-white/70 text-[10px] font-bold uppercase">Lihat Bukti</span>
                       </div>
@@ -245,14 +238,14 @@ export default function RMOrderDetailPage() {
             )}
 
             {/* Actions */}
-            <div className="space-y-3">
+            <div className="space-y-3 print:hidden">
               {order.status === "waiting" && proofUrl && (
                 <ActionBtn onClick={handleApprove} icon="task_alt" label="Verifikasi Lunas" variant="green" disabled={acting} />
               )}
               {order.status !== "canceled" && (
                 <ActionBtn onClick={handleReject} icon="block" label="Batalkan Order" variant="red" disabled={acting} />
               )}
-              <ActionBtn onClick={handleExport} icon="file_save" label="Export Data Pit" variant="default" />
+              <ActionBtn onClick={handleExport} icon="picture_as_pdf" label="Export PDF" variant="default" />
             </div>
 
             {done && (

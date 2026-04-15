@@ -129,8 +129,8 @@ export default function ValuesPage() {
               <h3 className="text-lg font-headline font-semibold text-white mb-2">{item.title}</h3>
               <p className="text-sm text-white/60 leading-relaxed">{item.description}</p>
               
-              {/* Hover Actions */}
-              <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              {/* Action Buttons */}
+              <div className="absolute top-4 right-4 flex items-center gap-2 transition-opacity">
                 <button
                   onClick={() => openEditModal(item)}
                   className="w-8 h-8 bg-black/40 hover:bg-white/20 text-white rounded-full flex items-center justify-center transition-colors"
