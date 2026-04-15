@@ -1,0 +1,5 @@
+pb_data/
+pocketbase_app
+*.db
+*.db-shm
+*.db-wal
