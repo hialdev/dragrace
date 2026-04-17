@@ -1,10 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import pb from "@/lib/pb";
 import { useAuthStore } from "@/store/authStore";
+
+// Derive the auto-password from email (mirrors Go backend logic)
+// #AUTO<local_alphanumeric>123
+function deriveOtpPassword(email: string): string {
+  const local = email.split("@")[0] ?? "";
+  const clean = local.replace(/[^a-zA-Z0-9]/g, "");
+  return `#AUTO${clean || "user"}123`;
+}
 
 export default function VerifyEmailPage() {
   const router = useRouter();
@@ -12,12 +20,23 @@ export default function VerifyEmailPage() {
   const [resending, setResending] = useState(false);
   const [resent, setResent] = useState(false);
   const [checking, setChecking] = useState(false);
+  const [checkMsg, setCheckMsg] = useState("");
+
+  // If user is not logged in, try to sign them in automatically using the stored email
+  // (from sessionStorage set during registration)
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem("otp_register_email");
+    if (stored) setPendingEmail(stored);
+  }, []);
 
   const handleResend = async () => {
-    if (!user?.email) return;
+    const email = user?.email ?? pendingEmail;
+    if (!email) return;
     setResending(true);
     try {
-      await pb.collection("users").requestVerification(user.email);
+      await pb.collection("users").requestVerification(email);
       setResent(true);
     } catch {
       // silently fail
@@ -28,20 +47,66 @@ export default function VerifyEmailPage() {
 
   const handleCheck = async () => {
     setChecking(true);
+    setCheckMsg("");
     try {
-      await pb.collection("users").authRefresh();
+      // If user already has an active session, just refresh
+      if (pb.authStore.isValid) {
+        await pb.collection("users").authRefresh();
+        setFromPb();
+        const record = pb.authStore.record;
+        if (record?.verified) {
+          doRedirect();
+          return;
+        } else {
+          setCheckMsg("Email belum diverifikasi. Klik link di email Anda, lalu coba lagi.");
+          return;
+        }
+      }
+
+      // No session — user registered via OTP (no password login yet).
+      // Try to sign in with auto-generated password to create a session.
+      const email = pendingEmail ?? user?.email;
+      if (!email) {
+        setCheckMsg("Sesi tidak ditemukan. Silakan login terlebih dahulu.");
+        return;
+      }
+
+      const autoPass = deriveOtpPassword(email);
+      try {
+        await pb.collection("users").authWithPassword(email, autoPass);
+      } catch {
+        // Could not auto-login — ask user to login manually
+        setCheckMsg("Gagal membuat sesi. Silakan login di halaman login menggunakan OTP.");
+        return;
+      }
+
+      // Refresh token to get latest verified status
+      try {
+        await pb.collection("users").authRefresh();
+      } catch {
+        // ignore — token from authWithPassword is still valid
+      }
       setFromPb();
+
+      // After login, check verification status
       const record = pb.authStore.record;
       if (record?.verified) {
-        router.push("/dashboard");
+        sessionStorage.removeItem("otp_register_email");
+        doRedirect();
       } else {
-        alert("Email belum diverifikasi. Periksa inbox Anda.");
+        setCheckMsg("Email belum diverifikasi. Klik link di email Anda, lalu coba lagi.");
       }
     } catch {
-      // token might be stale
+      setCheckMsg("Terjadi kesalahan. Silakan coba lagi.");
     } finally {
       setChecking(false);
     }
+  };
+
+  const doRedirect = () => {
+    const redirectTo = sessionStorage.getItem("post_verify_redirect") ?? "/dashboard";
+    sessionStorage.removeItem("post_verify_redirect");
+    router.push(redirectTo);
   };
 
   return (
@@ -63,10 +128,33 @@ export default function VerifyEmailPage() {
         Kami mengirim link verifikasi ke:
       </p>
       <p className="text-white font-medium text-sm mb-6">
-        {user?.email ?? "email Anda"}
+        {user?.email ?? pendingEmail ?? "email Anda"}
       </p>
 
       <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-3">
+        {/* Error/info message */}
+        {checkMsg && (
+          <div className="px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-left mb-1">
+            <p className="text-sm text-amber-300">{checkMsg}</p>
+          </div>
+        )}
+
+        {/* Step guide */}
+        <div className="text-left space-y-2 mb-2">
+          {[
+            "Buka email Anda dan cari email dari kami",
+            "Klik link verifikasi di dalam email",
+            "Kembali ke sini dan klik tombol di bawah",
+          ].map((step, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <div className="w-5 h-5 rounded-full bg-[#b80014]/20 border border-[#b80014]/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-[10px] font-bold text-[#b80014]">{i + 1}</span>
+              </div>
+              <p className="text-white/50 text-xs">{step}</p>
+            </div>
+          ))}
+        </div>
+
         {/* Check status */}
         <button
           id="btn-check-verification"
@@ -77,8 +165,10 @@ export default function VerifyEmailPage() {
         >
           {checking ? (
             <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-          ) : null}
-          Saya Sudah Verifikasi
+          ) : (
+            <span className="material-symbols-outlined text-[18px]">check_circle</span>
+          )}
+          {checking ? "Memeriksa..." : "Saya Sudah Verifikasi"}
         </button>
 
         {/* Resend */}
@@ -89,7 +179,7 @@ export default function VerifyEmailPage() {
           className="w-full py-3 bg-white/5 hover:bg-white/10 disabled:opacity-50
             text-white/70 font-medium text-sm rounded-xl transition-colors border border-white/10"
         >
-          {resent ? "✓ Email terkirim ulang" : resending ? "Mengirim..." : "Kirim Ulang Email"}
+          {resent ? "✓ Email terkirim ulang" : resending ? "Mengirim..." : "Kirim Ulang Email Verifikasi"}
         </button>
 
         <button

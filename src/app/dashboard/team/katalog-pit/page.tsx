@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getMyOrdersWithAssignments, getAvailablePits, createOrder } from "@/lib/api/orders";
+import { getMyOrdersWithAssignments, getAvailablePits } from "@/lib/api/orders";
 import { getMyTeam } from "@/lib/api/teams";
 import { statusBadge, lockBadge, formatCurrency } from "@/lib/orderUtils";
 import pb from "@/lib/pb";
@@ -78,15 +78,12 @@ function PitCard({
   pit,
   ownedCount,
   onOrder,
-  ordering,
 }: {
   pit: RacePit;
   ownedCount: number;
   onOrder: (pitId: string) => void;
-  ordering: string | null;
 }) {
   const coverUrl = pitCoverUrl(pit);
-  const isOrdering = ordering === pit.id;
 
   return (
     <div className="bg-white/5 border border-white/8 rounded-2xl overflow-hidden hover:border-white/15 hover:bg-white/[0.07] transition-all group">
@@ -128,24 +125,11 @@ function PitCard({
         )}
         <button
           onClick={() => onOrder(pit.id)}
-          disabled={isOrdering}
-          className={`w-full flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-xl transition-all ${
-            isOrdering
-              ? "bg-[#b80014]/20 text-[#b80014] border border-[#b80014]/20 cursor-wait"
-              : "bg-[#b80014]/10 hover:bg-[#b80014]/20 text-[#b80014] border border-[#b80014]/20"
-          }`}
+          className="w-full flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-xl transition-all
+            bg-[#b80014]/10 hover:bg-[#b80014]/20 text-[#b80014] border border-[#b80014]/20"
         >
-          {isOrdering ? (
-            <>
-              <span className="w-3 h-3 border border-[#b80014]/50 border-t-[#b80014] rounded-full animate-spin" />
-              Mendaftarkan...
-            </>
-          ) : (
-            <>
-              <span className="material-symbols-outlined text-[14px]">add_shopping_cart</span>
-              {ownedCount > 0 ? "Tambah Slot Pit" : "Daftar Pit Ini"}
-            </>
-          )}
+          <span className="material-symbols-outlined text-[14px]">add_shopping_cart</span>
+          {ownedCount > 0 ? "Tambah Slot Pit" : "Daftar Pit Ini"}
         </button>
       </div>
     </div>
@@ -200,7 +184,7 @@ function OrderTicketCard({ order }: { order: any }) {
             <div className="mt-3 space-y-1">
               <p className="text-[10px] text-white/30 uppercase tracking-wider">Racer Assigned</p>
             {assignments.map((a: any) => {
-              const vehiclePhoto = a.expand?.vehicle?.file_image_vehicle 
+              const vehiclePhoto = a.expand?.vehicle?.file_image_vehicle
                 ? pb.files.getURL(a.expand.vehicle, a.expand.vehicle.file_image_vehicle)
                 : null;
 
@@ -286,16 +270,17 @@ function OrderTicketCard({ order }: { order: any }) {
 }
 
 // ── Main Page ─────────────────────────────────────────────────────────────
+type TabType = "catalog" | "orders";
+
 export default function KatalogPitPage() {
   const router = useRouter();
 
+  const [activeTab, setActiveTab] = useState<TabType>("catalog");
   const [orders, setOrders] = useState<any[]>([]);
   const [catalog, setCatalog] = useState<GroupedCatalog[]>([]);
   const [pitOwnedCounts, setPitOwnedCounts] = useState<Map<string, number>>(new Map());
   const [team, setTeam] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [ordering, setOrdering] = useState<string | null>(null);
-  const [orderError, setOrderError] = useState("");
   const [showTeamWarning, setShowTeamWarning] = useState(false);
 
   useEffect(() => {
@@ -320,21 +305,13 @@ export default function KatalogPitPage() {
     load();
   }, []);
 
-  const handleOrder = async (pitId: string) => {
+  const handleOrder = (pitId: string) => {
     if (!team) {
       setShowTeamWarning(true);
       return;
     }
-
-    setOrdering(pitId);
-    setOrderError("");
-    try {
-      const order = await createOrder(pitId);
-      router.push(`/dashboard/team/orders/${order.id}/payment`);
-    } catch (err: any) {
-      setOrderError(err?.response?.message ?? err?.message ?? "Gagal mendaftar. Coba lagi.");
-      setOrdering(null);
-    }
+    // Arahkan ke order boarding dengan pitId sebagai query param
+    router.push(`/dashboard/team/order-boarding?pitId=${pitId}`);
   };
 
   if (loading) {
@@ -350,8 +327,8 @@ export default function KatalogPitPage() {
       {/* Team Warning Modal */}
       {showTeamWarning && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div 
-            className="absolute inset-0 bg-black/80 backdrop-blur-sm" 
+          <div
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
             onClick={() => setShowTeamWarning(false)}
           />
           <div className="relative w-full max-w-md bg-[#161819] border border-white/10 rounded-3xl p-8 shadow-2xl animate-in zoom-in-95 duration-200">
@@ -364,11 +341,11 @@ export default function KatalogPitPage() {
             </p>
             <div className="flex flex-col gap-3">
               <Link
-                href="/dashboard/team/profile?setup=1"
+                href="/dashboard/team/order-boarding"
                 className="w-full py-4 bg-[#b80014] hover:bg-[#e21b23] text-white font-bold text-sm rounded-2xl transition-all shadow-lg shadow-[#b80014]/20 flex items-center justify-center gap-2"
               >
                 <span className="material-symbols-outlined text-[18px]">edit_note</span>
-                Lengkapi Profil Tim Sekarang
+                Lengkapi Data Tim Sekarang
               </Link>
               <button
                 onClick={() => setShowTeamWarning(false)}
@@ -381,105 +358,158 @@ export default function KatalogPitPage() {
         </div>
       )}
 
-      {/* ── Section 1: My Orders (Tickets) ──────────────────────────────── */}
-      <div className="mb-10">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-lg font-headline font-bold text-white">Pit Saya</h2>
-            <p className="text-white/40 text-xs mt-0.5">
-              {orders.length} pit yang sudah didaftarkan
-            </p>
-          </div>
-        </div>
-
-        {orders.length === 0 ? (
-          <div className="bg-white/3 border border-white/8 rounded-2xl p-8 text-center">
-            <span className="material-symbols-outlined text-white/15 text-[40px] mb-3 block">
-              confirmation_number
+      {/* ── Tab Navigation ─────────────────────────────────────────────── */}
+      <div className="flex gap-1 mb-8 bg-white/5 border border-white/8 rounded-2xl p-1.5">
+        <button
+          onClick={() => setActiveTab("catalog")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all ${
+            activeTab === "catalog"
+              ? "bg-[#b80014] text-white shadow-lg shadow-[#b80014]/20"
+              : "text-white/40 hover:text-white/70"
+          }`}
+        >
+          <span className="material-symbols-outlined text-[16px]">garage</span>
+          Pesan Kelas Balap / Pit
+        </button>
+        <button
+          onClick={() => setActiveTab("orders")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all ${
+            activeTab === "orders"
+              ? "bg-[#b80014] text-white shadow-lg shadow-[#b80014]/20"
+              : "text-white/40 hover:text-white/70"
+          }`}
+        >
+          <span className="material-symbols-outlined text-[16px]">confirmation_number</span>
+          Pesanan Saya
+          {orders.length > 0 && (
+            <span
+              className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                activeTab === "orders"
+                  ? "bg-white/20 text-white"
+                  : "bg-white/10 text-white/50"
+              }`}
+            >
+              {orders.length}
             </span>
-            <p className="text-white/40 text-sm">Belum ada pit yang didaftarkan.</p>
-            <p className="text-white/25 text-xs mt-1">
-              Pilih pit dari katalog di bawah untuk mulai mendaftar.
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-3">
-            {orders.map((order) => (
-              <OrderTicketCard key={order.id} order={order} />
-            ))}
-          </div>
-        )}
+          )}
+        </button>
       </div>
 
-      {/* Divider */}
-      <div className="flex items-center gap-4 mb-8">
-        <div className="flex-1 h-px bg-white/8" />
-        <div className="flex items-center gap-2 px-4 py-1.5 bg-white/5 rounded-full border border-white/8">
-          <span className="material-symbols-outlined text-[#b80014] text-[16px]">garage</span>
-          <span className="text-white/60 text-xs font-semibold tracking-wider uppercase">
-            Katalog Pit
-          </span>
-        </div>
-        <div className="flex-1 h-px bg-white/8" />
-      </div>
+      {/* ── Tab: Pesan Kelas Balap / Pit ─────────────────────────────── */}
+      {activeTab === "catalog" && (
+        <>
+          {/* CTA Banner */}
+          <div className="mb-6 px-5 py-4 bg-white/5 border border-white/8 rounded-2xl flex items-center justify-between gap-4">
+            <div>
+              <p className="text-white font-semibold text-sm">Daftar via Panduan Langkah-Demi-Langkah</p>
+              <p className="text-white/40 text-xs mt-0.5">Ikuti proses pendaftaran yang dipandu dari awal hingga pembayaran.</p>
+            </div>
+            <Link
+              href="/dashboard/team/order-boarding"
+              className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold bg-[#b80014] hover:bg-[#e21b23] text-white rounded-xl transition-colors flex-shrink-0"
+            >
+              <span className="material-symbols-outlined text-[16px]">auto_awesome</span>
+              Mulai
+            </Link>
+          </div>
 
-      {/* ── Section 2: Catalog ──────────────────────────────────────────── */}
-      {orderError && (
-        <div className="mb-6 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30">
-          <p className="text-sm text-red-400">{orderError}</p>
-        </div>
+          {catalog.length === 0 ? (
+            <div className="bg-white/3 border border-white/8 rounded-2xl p-12 text-center">
+              <span className="material-symbols-outlined text-white/15 text-[48px] mb-4 block">
+                event_busy
+              </span>
+              <p className="text-white/40 text-sm">Belum ada race pit yang tersedia saat ini.</p>
+            </div>
+          ) : (
+            <div className="space-y-10">
+              {catalog.map((classGroup) => (
+                <div key={classGroup.classId}>
+                  {/* Race Class Header */}
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-2 h-6 bg-[#b80014] rounded-full" />
+                    <h3 className="text-xl font-headline font-bold text-white">
+                      {classGroup.className}
+                    </h3>
+                  </div>
+
+                  <div className="space-y-6">
+                    {classGroup.categories.map((catGroup) => (
+                      <div key={catGroup.categoryId}>
+                        {/* Race Category Sub-header */}
+                        <div className="flex items-center gap-2 mb-4">
+                          <span className="material-symbols-outlined text-white/30 text-[16px]">
+                            subdirectory_arrow_right
+                          </span>
+                          <h4 className="text-sm font-semibold text-white/60 uppercase tracking-wide">
+                            {catGroup.categoryName}
+                          </h4>
+                          <div className="flex-1 h-px bg-white/8 ml-2" />
+                        </div>
+
+                        {/* Race Pits Grid */}
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 pl-5">
+                          {catGroup.pits.map((pit) => (
+                            <PitCard
+                              key={pit.id}
+                              pit={pit}
+                              ownedCount={pitOwnedCounts.get(pit.id) || 0}
+                              onOrder={handleOrder}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
-      {catalog.length === 0 ? (
-        <div className="bg-white/3 border border-white/8 rounded-2xl p-12 text-center">
-          <span className="material-symbols-outlined text-white/15 text-[48px] mb-4 block">
-            event_busy
-          </span>
-          <p className="text-white/40 text-sm">Belum ada race pit yang tersedia saat ini.</p>
-        </div>
-      ) : (
-        <div className="space-y-10">
-          {catalog.map((classGroup) => (
-            <div key={classGroup.classId}>
-              {/* Race Class Header */}
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-2 h-6 bg-[#b80014] rounded-full" />
-                <h3 className="text-xl font-headline font-bold text-white">
-                  {classGroup.className}
-                </h3>
-              </div>
-
-              <div className="space-y-6">
-                {classGroup.categories.map((catGroup) => (
-                  <div key={catGroup.categoryId}>
-                    {/* Race Category Sub-header */}
-                    <div className="flex items-center gap-2 mb-4">
-                      <span className="material-symbols-outlined text-white/30 text-[16px]">
-                        subdirectory_arrow_right
-                      </span>
-                      <h4 className="text-sm font-semibold text-white/60 uppercase tracking-wide">
-                        {catGroup.categoryName}
-                      </h4>
-                      <div className="flex-1 h-px bg-white/8 ml-2" />
-                    </div>
-
-                    {/* Race Pits Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 pl-5">
-                      {catGroup.pits.map((pit) => (
-                        <PitCard
-                          key={pit.id}
-                          pit={pit}
-                          ownedCount={pitOwnedCounts.get(pit.id) || 0}
-                          onOrder={handleOrder}
-                          ordering={ordering}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
+      {/* ── Tab: Pesanan Saya ─────────────────────────────────────────── */}
+      {activeTab === "orders" && (
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-headline font-bold text-white">Pesanan Saya</h2>
+              <p className="text-white/40 text-xs mt-0.5">
+                {orders.length} pit yang sudah didaftarkan
+              </p>
             </div>
-          ))}
+            <button
+              onClick={() => setActiveTab("catalog")}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-[#b80014]/10 hover:bg-[#b80014]/20 text-[#b80014] border border-[#b80014]/20 rounded-xl transition-colors"
+            >
+              <span className="material-symbols-outlined text-[16px]">add</span>
+              Tambah Pesanan
+            </button>
+          </div>
+
+          {orders.length === 0 ? (
+            <div className="bg-white/3 border border-white/8 rounded-2xl p-8 text-center">
+              <span className="material-symbols-outlined text-white/15 text-[40px] mb-3 block">
+                confirmation_number
+              </span>
+              <p className="text-white/40 text-sm">Belum ada pit yang didaftarkan.</p>
+              <p className="text-white/25 text-xs mt-1">
+                Pilih pit dari tab "Pesan Kelas Balap / Pit" untuk mulai mendaftar.
+              </p>
+              <button
+                onClick={() => setActiveTab("catalog")}
+                className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-[#b80014] hover:bg-[#e21b23] text-white text-sm font-semibold rounded-xl transition-colors"
+              >
+                <span className="material-symbols-outlined text-[16px]">add_shopping_cart</span>
+                Pesan Sekarang
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3">
+              {orders.map((order) => (
+                <OrderTicketCard key={order.id} order={order} />
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

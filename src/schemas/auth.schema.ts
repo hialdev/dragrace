@@ -1,7 +1,23 @@
 import { z } from "zod";
 
-// ── Register ──────────────────────────────────────────
-export const registerSchema = z
+// ── Register (OTP mode — tanpa password) ─────────────
+export const registerOtpSchema = z.object({
+  full_name: z
+    .string()
+    .min(3, "Nama minimal 3 karakter")
+    .max(100, "Nama terlalu panjang"),
+  email: z.string().email("Format email tidak valid"),
+  phone: z
+    .string()
+    .min(9, "Nomor HP minimal 9 digit")
+    .max(15, "Nomor HP terlalu panjang")
+    .regex(/^[0-9+\-\s]+$/, "Nomor HP tidak valid"),
+});
+
+export type RegisterOtpForm = z.infer<typeof registerOtpSchema>;
+
+// ── Register (Password mode — dengan password) ────────
+export const registerPasswordSchema = z
   .object({
     full_name: z
       .string()
@@ -25,7 +41,11 @@ export const registerSchema = z
     path: ["passwordConfirm"],
   });
 
-export type RegisterForm = z.infer<typeof registerSchema>;
+export type RegisterPasswordForm = z.infer<typeof registerPasswordSchema>;
+
+// Alias for backward-compat
+export const registerSchema = registerPasswordSchema;
+export type RegisterForm = RegisterPasswordForm;
 
 // ── Login (Password mode) ─────────────────────────────
 export const loginSchema = z.object({

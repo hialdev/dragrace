@@ -6,16 +6,21 @@ import { useAuthStore } from "@/store/authStore";
 
 const navItems = [
    { href: "/dashboard/team", label: "Overview", icon: "home" },
-   { href: "/dashboard/team/profile", label: "Team Profile", icon: "groups" },
-   { href: "/dashboard/team/racers", label: "Racers", icon: "person" },
+   { href: "/dashboard/team/profile", label: "Profil Tim", icon: "groups" },
+   { href: "/dashboard/team/racers", label: "Data Pembalap", icon: "person" },
    {
       href: "/dashboard/team/vehicles",
-      label: "Vehicles",
+      label: "Kendaraan",
       icon: "directions_car",
    },
    {
+      href: "/dashboard/team/katalog-pit",
+      label: "Pesan Kelas Balap / Pit",
+      icon: "garage",
+   },
+   {
       href: "/dashboard/team/orders",
-      label: "Pit Entries",
+      label: "Pesanan Saya",
       icon: "receipt_long",
    },
 ];

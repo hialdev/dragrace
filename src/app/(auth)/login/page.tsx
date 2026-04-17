@@ -54,6 +54,9 @@ function LoginForm() {
   const [serverError, setServerError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // ── Show/hide password ──────────────────────────
+  const [showPassword, setShowPassword] = useState(false);
+
   // ── OTP state ─────────────────────────────────────
   const [otpStep, setOtpStep] = useState<OtpStep>("email");
   const [otpId, setOtpId] = useState("");
@@ -172,9 +175,29 @@ function LoginForm() {
       setFromPb();
       redirectAfterLogin();
     } catch (err: any) {
-      const msg = err?.response?.message ?? err?.message ?? "";
-      if (msg.toLowerCase().includes("invalid") || msg.toLowerCase().includes("credentials")) {
-        setServerError("Email atau password salah.");
+      const status = err?.status ?? err?.response?.code ?? 0;
+      const msg = (err?.response?.message ?? err?.message ?? "").toLowerCase();
+
+      if (status === 400 || msg.includes("invalid") || msg.includes("credentials") || msg.includes("failed to authenticate")) {
+        // Cek apakah akun ini OTP-only (tidak punya custom password)
+        try {
+          const PB_URL = process.env.NEXT_PUBLIC_PB_URL ?? "http://127.0.0.1:8090";
+          const checkRes = await fetch(`${PB_URL}/api/auth/check-is-otp-only`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: data.email }),
+          });
+          const checkData = await checkRes.json();
+          if (checkData?.is_otp_only) {
+            setServerError(
+              "Akun tersebut hanya dapat login menggunakan OTP. Gunakan metode \"Login dengan OTP Email\"."
+            );
+          } else {
+            setServerError("Email atau password salah.");
+          }
+        } catch {
+          setServerError("Email atau password salah.");
+        }
       } else {
         setServerError("Terjadi kesalahan. Silakan coba lagi.");
       }
@@ -391,19 +414,31 @@ function LoginForm() {
         >
           Password
         </label>
-        <input
-          id="pw-password"
-          type="password"
-          autoComplete="current-password"
-          placeholder="••••••••"
-          disabled={isLoading}
-          className={`w-full px-4 py-3 rounded-xl bg-white/8 border text-white placeholder-white/30 text-sm outline-none transition-all focus:ring-2 focus:ring-[#b80014]/50 focus:border-[#b80014]/70 disabled:opacity-60 ${
-            passwordForm.formState.errors.password
-              ? "border-red-500/60"
-              : "border-white/10"
-          }`}
-          {...passwordForm.register("password")}
-        />
+        <div className="relative">
+          <input
+            id="pw-password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="current-password"
+            placeholder="••••••••"
+            disabled={isLoading}
+            className={`w-full pl-4 pr-11 py-3 rounded-xl bg-white/8 border text-white placeholder-white/30 text-sm outline-none transition-all focus:ring-2 focus:ring-[#b80014]/50 focus:border-[#b80014]/70 disabled:opacity-60 ${
+              passwordForm.formState.errors.password
+                ? "border-red-500/60"
+                : "border-white/10"
+            }`}
+            {...passwordForm.register("password")}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            tabIndex={-1}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+          >
+            <span className="material-symbols-outlined text-[20px]">
+              {showPassword ? "visibility_off" : "visibility"}
+            </span>
+          </button>
+        </div>
         {passwordForm.formState.errors.password && (
           <p className="mt-1.5 text-xs text-red-400">
             {passwordForm.formState.errors.password.message}
