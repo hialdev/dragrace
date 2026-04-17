@@ -56,6 +56,8 @@ func main() {
 		// Auth helper routes (public)
 		authGroup := se.Router.Group("/api/auth")
 		authGroup.POST("/check-email", routes.CheckEmailExists(app))
+		authGroup.POST("/register-otp", routes.RegisterOtp(app))
+		authGroup.POST("/check-is-otp-only", routes.CheckIsOtpOnly(app))
 
 		// Payment routes
 		paymentGroup := se.Router.Group("/api/payment")
