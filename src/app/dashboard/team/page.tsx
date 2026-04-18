@@ -68,7 +68,7 @@ export default function TeamDashboardPage() {
     const init = async () => {
       const t = await getMyTeam();
       if (!t) {
-        router.replace("/dashboard/team/profile?setup=1");
+        router.replace("/dashboard/team/order-boarding");
         return;
       }
       setTeamData(t);
@@ -153,11 +153,11 @@ export default function TeamDashboardPage() {
             <span className="text-white text-sm font-medium">Tambah Kendaraan</span>
           </Link>
           <Link
-            href="/dashboard/team/katalog-pit"
+            href="/dashboard/team/order-boarding"
             className="flex items-center gap-3 p-4 bg-[#b80014]/10 hover:bg-[#b80014]/15 rounded-xl transition-colors border border-[#b80014]/20"
           >
-            <span className="material-symbols-outlined text-[#b80014] text-[20px]">add_shopping_cart</span>
-            <span className="text-white text-sm font-semibold">Daftar ke Pit</span>
+            <span className="material-symbols-outlined text-[#b80014] text-[20px]">assignment_add</span>
+            <span className="text-white text-sm font-semibold">Pesan Kelas Balap / Pit</span>
           </Link>
         </div>
       </div>

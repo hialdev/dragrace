@@ -82,7 +82,7 @@ function LoginForm() {
   }, [countdown]);
 
   // ── Redirect helper ───────────────────────────────
-  const redirectAfterLogin = useCallback(() => {
+  const redirectAfterLogin = useCallback(async () => {
     const record = pb.authStore.record;
     if (!record?.verified) {
       router.push("/verify-email");
@@ -90,7 +90,35 @@ function LoginForm() {
     }
     const role = record?.role as string;
     const redirect = params.get("redirect");
-    router.push(redirect ?? ROLE_HOME[role as keyof typeof ROLE_HOME] ?? "/dashboard");
+
+    // Jika ada query redirect, gunakan itu langsung
+    if (redirect) {
+      router.push(redirect);
+      return;
+    }
+
+    // Untuk team_manager: cek apakah sudah punya tim
+    if (role === "team_manager") {
+      try {
+        const userId = record.id;
+        const PB_URL = process.env.NEXT_PUBLIC_PB_URL ?? "http://127.0.0.1:8090";
+        const token = pb.authStore.token;
+        const res = await fetch(
+          `${PB_URL}/api/collections/teams/records?filter=user%3D"${userId}"&perPage=1`,
+          { headers: { Authorization: token } }
+        );
+        const data = await res.json();
+        if (!data?.items?.length) {
+          // Belum ada tim → arahkan ke order boarding
+          router.push("/dashboard/team/order-boarding");
+          return;
+        }
+      } catch {
+        // Gagal cek → fallback ke home biasa
+      }
+    }
+
+    router.push(ROLE_HOME[role as keyof typeof ROLE_HOME] ?? "/dashboard");
   }, [router, params]);
 
   // ── OTP Step 1: Request OTP ───────────────────────

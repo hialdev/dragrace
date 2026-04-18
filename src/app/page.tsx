@@ -118,24 +118,6 @@ export default function Home() {
           events,
           loading: false
         });
-        
-        // Update favicon dynamically if site_favicon exists
-        if (content.site_favicon) {
-           const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
-           if (link) {
-             link.href = content.site_favicon;
-           } else {
-             const newLink = document.createElement("link");
-             newLink.rel = "icon";
-             newLink.href = content.site_favicon;
-             document.head.appendChild(newLink);
-           }
-        }
-        
-        // Update title dynamically
-        if (content.site_name) {
-          document.title = content.site_name;
-        }
       } catch (error) {
         console.error("Failed to fetch landing page data:", error);
         setData(prev => ({ ...prev, loading: false }));
