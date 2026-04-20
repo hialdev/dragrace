@@ -80,7 +80,7 @@ export async function getOrder(id: string): Promise<Order> {
   }) as Promise<Order>;
 }
 
-export async function createOrder(racePitId: string): Promise<Order> {
+export async function createOrder(racePitId: string, racerId?: string, vehicleId?: string): Promise<Order> {
   const userId = pb.authStore.record?.id!;
   
   // Fetch pit price first
@@ -88,7 +88,7 @@ export async function createOrder(racePitId: string): Promise<Order> {
   const price = pit.price || 0;
 
   const code = `ORD-${Date.now().toString(36).toUpperCase()}`;
-  return pb.collection(COLLECTIONS.ORDER).create({
+  const order = await pb.collection(COLLECTIONS.ORDER).create({
     code,
     race_pit: racePitId,
     user: userId,
@@ -97,7 +97,18 @@ export async function createOrder(racePitId: string): Promise<Order> {
     unlock_requested: false,
     is_manual_payment: false,
     bill_price: price,
-  }) as Promise<Order>;
+  }) as Order;
+
+  // If racer and vehicle are provided, create assignment automatically
+  if (racerId && vehicleId) {
+    await pb.collection(COLLECTIONS.ORDER_RACER_ASSIGNMENT).create({
+      order: order.id,
+      racer: racerId,
+      vehicle: vehicleId,
+    });
+  }
+
+  return order;
 }
 
 export async function cancelOrder(id: string): Promise<void> {

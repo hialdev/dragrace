@@ -30,7 +30,7 @@ export default function Step5Review({ team, pit, racer, vehicle, onBack, onSucce
     setProcessing(true);
     setError("");
     try {
-      const order = await createOrder(pit.id);
+      const order = await createOrder(pit.id, racer.id, vehicle.id);
       onSuccess(order.id);
     } catch (err: any) {
       setError(err?.response?.message ?? "Gagal membuat pesanan. Coba lagi.");

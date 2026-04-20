@@ -42,36 +42,36 @@ export const Navbar = ({ logo, siteName, registerText }: { logo?: string; siteNa
         </Link>
 
             <div className="hidden md:flex items-center gap-10">
-               <a
+               <Link
                   className="font-headline font-light tracking-tighter text-zinc-500 hover:text-zinc-900 transition-colors"
-                  href="#about"
+                  href="/#about"
                >
                   About
-               </a>
-               <a
+               </Link>
+               <Link
                   className="font-headline font-light tracking-tighter text-zinc-500 hover:text-zinc-900 transition-colors"
-                  href="#race-classes"
+                  href="/#race-classes"
                >
                   Race Class
-               </a>
-               <a
+               </Link>
+               <Link
                   className="font-headline font-light tracking-tighter text-zinc-500 hover:text-zinc-900 transition-colors"
-                  href="#prize"
+                  href="/#prize"
                >
                   Prize
-               </a>
-               <a
+               </Link>
+               <Link
                   className="font-headline font-light tracking-tighter text-zinc-500 hover:text-zinc-900 transition-colors"
-                  href="#star-guest"
+                  href="/#star-guest"
                >
                   Star Guest
-               </a>
-               <a
+               </Link>
+               <Link
                   className="font-headline font-light tracking-tighter text-zinc-500 hover:text-zinc-900 transition-colors"
-                  href="#timeline"
+                  href="/#timeline"
                >
                   Timeline
-               </a>
+               </Link>
             </div>
 
             {isReady && (
