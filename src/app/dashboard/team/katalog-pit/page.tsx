@@ -7,6 +7,7 @@ import { getMyOrdersWithAssignments, getAvailablePits } from "@/lib/api/orders";
 import { getMyTeam } from "@/lib/api/teams";
 import { statusBadge, lockBadge, formatCurrency } from "@/lib/orderUtils";
 import pb from "@/lib/pb";
+import LockReminder from "@/components/dashboard/LockReminder";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface RacePit {
@@ -324,6 +325,7 @@ export default function KatalogPitPage() {
 
   return (
     <div className="max-w-6xl relative">
+      <LockReminder />
       {/* Team Warning Modal */}
       {showTeamWarning && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">

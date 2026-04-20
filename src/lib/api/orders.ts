@@ -148,6 +148,33 @@ export function subscribeOrder(orderId: string, callback: (order: Order) => void
   return () => pb.collection(COLLECTIONS.ORDER).unsubscribe(orderId);
 }
 
+/** Get orders that are paid but not yet locked */
+export async function getOrdersToLock(): Promise<(Order & { assignments?: any[] })[]> {
+  const userId = pb.authStore.record?.id;
+  if (!userId) return [];
+  const res = await pb.collection(COLLECTIONS.ORDER).getFullList({
+    filter: `user = "${userId}" && status = "paid" && is_locked = false`,
+    sort: "-created",
+    expand: "race_pit,race_pit.race_category",
+  }) as Order[];
+
+  // Fetch assignments for all these orders in parallel
+  const withAssignments = await Promise.all(
+    res.map(async (order) => {
+      const assignments = await pb
+        .collection(COLLECTIONS.ORDER_RACER_ASSIGNMENT)
+        .getFullList({
+          filter: `order = "${order.id}"`,
+          expand: "racer,vehicle",
+        })
+        .catch(() => []);
+      return { ...order, assignments };
+    })
+  );
+
+  return withAssignments;
+}
+
 /** Get available race pits with full hierarchy expand */
 export async function getAvailablePits() {
   return pb.collection(COLLECTIONS.RACE_PIT).getFullList({

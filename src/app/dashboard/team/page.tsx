@@ -9,6 +9,7 @@ import { getMyTeam } from "@/lib/api/teams";
 import { getRacers } from "@/lib/api/racers";
 import { getVehicles } from "@/lib/api/vehicles";
 import pb from "@/lib/pb";
+import LockReminder from "@/components/dashboard/LockReminder";
 
 function StatCard({
   label,
@@ -100,6 +101,7 @@ export default function TeamDashboardPage() {
 
   return (
     <div className="max-w-4xl">
+      <LockReminder />
       {/* Team Header Card */}
       <div className="bg-white/5 border border-white/8 rounded-2xl p-6 mb-6 flex items-center gap-5">
         <div className="w-16 h-16 rounded-2xl bg-white/8 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">

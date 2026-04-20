@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getMyTeam } from "@/lib/api/teams";
+import pb from "@/lib/pb";
 import StepperHeader from "./components/StepperHeader";
 import Step1Team from "./components/Step1Team";
 import Step2Pit from "./components/Step2Pit";
@@ -34,9 +35,26 @@ function OrderBoardingContent() {
       const team = await getMyTeam().catch(() => null);
       setExistingTeam(team);
 
-      if (team && pitIdFromQuery) {
-        // Existing user coming from katalog-pit → skip to step 3 (team & pit auto-set)
-        setCurrentStep(3);
+      if (pitIdFromQuery) {
+        // Fetch pre-selected pit details
+        try {
+          const pit = await pb.collection("race_pit").getOne(pitIdFromQuery, {
+            expand: "race_category,race_category.race_class"
+          });
+          setSelectedPit(pit);
+          
+          if (team) {
+            // Existing user + pit pre-selected -> skip to step 3
+            setCurrentStep(3);
+          } else {
+            // New user + pit pre-selected -> skip to step 2 (start at 1)
+            setCurrentStep(1);
+          }
+        } catch (error) {
+          console.error("Failed to load pre-selected pit:", error);
+          if (team) setCurrentStep(2);
+          else setCurrentStep(1);
+        }
       } else if (team) {
         // Existing user, no pit pre-selected → start at step 2
         setCurrentStep(2);
