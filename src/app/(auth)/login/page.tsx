@@ -22,20 +22,6 @@ const RESEND_COOLDOWN = 60; // seconds
 type LoginMode = "otp" | "password";
 type OtpStep = "email" | "code";
 
-// ── Logo ───────────────────────────────────────────────────────
-function Logo() {
-  return (
-    <div className="inline-flex items-center gap-2 mb-3">
-      <div className="w-8 h-8 bg-[#b80014] rounded-sm flex items-center justify-center">
-        <span className="text-white font-bold text-sm">DR</span>
-      </div>
-      <span className="text-white font-headline font-semibold text-lg tracking-wide">
-        STAR DRAG RACE
-      </span>
-    </div>
-  );
-}
-
 // ── Spinner ────────────────────────────────────────────────────
 function Spinner() {
   return (
@@ -530,7 +516,6 @@ function LoginForm() {
     <div className="w-full max-w-md">
       {/* Header */}
       <div className="text-center mb-8">
-        <Logo />
         <h1 className="text-2xl font-headline font-semibold text-white transition-all">
           {pageTitle}
         </h1>

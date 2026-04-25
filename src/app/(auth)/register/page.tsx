@@ -125,14 +125,6 @@ export default function RegisterPage() {
     <div className="w-full max-w-md">
       {/* Brand */}
       <div className="text-center mb-8">
-        <div className="inline-flex items-center gap-2 mb-3">
-          <div className="w-8 h-8 bg-[#b80014] rounded-sm flex items-center justify-center">
-            <span className="text-white font-bold text-sm">DR</span>
-          </div>
-          <span className="text-white font-headline font-semibold text-lg tracking-wide">
-            STAR DRAG RACE
-          </span>
-        </div>
         <h1 className="text-2xl font-headline font-semibold text-white">Buat Akun</h1>
         <p className="text-sm text-white/50 mt-1">Daftarkan tim Anda ke event drag race</p>
       </div>

@@ -31,9 +31,10 @@ export const ROLES = {
    RACE_MANAGER: "race_manager",
    CONTENT: "content",
    SUPERADMIN: "superadmin",
+   COLLECTOR: "collector",
 } as const;
 
-export type Role = (typeof ROLES)[keyof typeof ROLES];
+export type Role = (typeof ROLES)[keyof typeof ROLES] | "collector";
 
 // Role → dashboard home route
 export const ROLE_HOME: Record<Role, string> = {
@@ -41,4 +42,5 @@ export const ROLE_HOME: Record<Role, string> = {
    race_manager: "/dashboard/race-manager",
    content: "/dashboard/content",
    superadmin: "/dashboard/admin",
+   collector: "/dashboard/collector/participants",
 };

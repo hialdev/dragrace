@@ -9,7 +9,7 @@ export async function getAllOrders(filter?: string) {
   return pb.collection(COLLECTIONS.ORDER).getFullList({
     filter: filter ?? "",
     sort: "-created",
-    expand: "user,race_pit,race_pit.race_category,team",
+    expand: "user,race_pit,race_pit.race_category,race_pit.race_category.race_class,team",
   });
 }
 
